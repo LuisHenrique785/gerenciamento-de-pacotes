@@ -3,174 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciamento de Pacotes com Grid</title>
+  <title>Animação do Coração</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 20px;
-    }
-    .form-container {
-      max-width: 600px;
-      margin: 20px auto;
-    }
-    label, input, textarea, button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      font-size: 16px;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      flex-direction: column;
     }
     canvas {
+      display: none; /* O canvas começa invisível */
       border: 1px solid #ddd;
-      margin-top: 20px;
+      background-color: #fff;
     }
-    .btn {
+    button {
       padding: 10px 20px;
-      font-size: 16px;
-      background-color: green;
+      font-size: 18px;
+      background-color: red;
       color: white;
       border: none;
       cursor: pointer;
+      border-radius: 5px;
     }
-    .btn-search {
-      background-color: blue;
+    button:hover {
+      background-color: darkred;
     }
   </style>
 </head>
 <body>
+  <button id="startButton">Iniciar Animação</button>
+  <canvas id="heartCanvas" width="400" height="400"></canvas>
 
-<h1>Gerenciamento de Pacotes com Grid</h1>
+  <script>
+    const canvas = document.getElementById("heartCanvas");
+    const ctx = canvas.getContext("2d");
+    const button = document.getElementById("startButton");
 
-<div class="form-container">
-  <label for="quadrado">Posição (ex.: A1, A2):</label>
-  <input type="text" id="quadrado" placeholder="Digite a posição">
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
 
-  <label for="pacotes">Pacotes (separados por vírgulas):</label>
-  <textarea id="pacotes" rows="4" placeholder="Ex.: A3_AM, K9_AM"></textarea>
+    let size = 0; // Tamanho do coração (para animação)
+    const maxSize = 100; // Tamanho máximo do coração
+    const speed = 2; // Velocidade de crescimento
 
-  <button class="btn" onclick="adicionarRota()">Adicionar Rota</button>
-</div>
-
-<div class="form-container">
-  <label for="busca">Buscar por rota:</label>
-  <input type="text" id="busca" placeholder="Digite a rota (ex.: A3_AM)">
-  <button class="btn btn-search" onclick="buscarRota()">Buscar</button>
-</div>
-
-<canvas id="gridCanvas" width="1000" height="1000"></canvas>
-
-<script>
-  const rotas = [];
-  const canvas = document.getElementById("gridCanvas");
-  const ctx = canvas.getContext("2d");
-
-  const gridSize = 100; // Tamanho dos quadrados
-  const colunas = 10; // Número de quadrantes horizontais (A até J)
-  const linhas = 10; // Número de quadrantes verticais (1 até 10)
-
-  let rotaBuscada = ""; // Para armazenar a rota a ser destacada
-
-  function desenharGrid() {
-    // Limpa o canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Desenha o grid
-    for (let x = 0; x < colunas; x++) {
-      for (let y = 0; y < linhas; y++) {
-        ctx.strokeStyle = "#ccc";
-        ctx.strokeRect(x * gridSize, y * gridSize, gridSize, gridSize);
-      }
+    function drawHeart(x, y, size) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
+      ctx.bezierCurveTo(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
+      ctx.closePath();
+      ctx.fillStyle = "red";
+      ctx.fill();
     }
 
-    // Adiciona os pacotes às posições
-    rotas.forEach((rota) => {
-      const { quadrado, pacotes } = rota;
+    function drawText() {
+      ctx.font = "24px Arial";
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.fillText("Olá", centerX, centerY + 10);
+    }
 
-      // Converte posição para coordenadas no grid
-      const col = quadrado.charCodeAt(0) - 65; // Ex.: 'A' -> 0
-      const row = parseInt(quadrado.slice(1)) - 1;
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const x = col * gridSize;
-      const y = row * gridSize;
-
-      // Destaca o quadrado se a rota buscada estiver nos pacotes
-      if (rotaBuscada && pacotes.includes(rotaBuscada)) {
-        ctx.fillStyle = "#ffcccc"; // Cor de destaque
-      } else {
-        ctx.fillStyle = "#e3f2fd"; // Cor normal
+      if (size < maxSize) {
+        size += speed; // Faz o coração crescer
       }
 
-      ctx.fillRect(x, y, gridSize, gridSize);
+      drawHeart(centerX, centerY, size);
 
-      // Escreve o texto (posição e pacotes)
-      ctx.fillStyle = "#000";
-      ctx.font = "12px Arial";
-      ctx.fillText(quadrado, x + 5, y + 15); // Posição no topo
+      if (size >= maxSize) {
+        drawText(); // Escreve o texto quando o coração termina de crescer
+      }
 
-      // Pacotes no centro
-      pacotes.forEach((pacote, index) => {
-        ctx.fillText(pacote, x + 5, y + 30 + index * 15);
-      });
+      requestAnimationFrame(animate);
+    }
+
+    button.addEventListener("click", () => {
+      button.style.display = "none"; // Esconde o botão
+      canvas.style.display = "block"; // Mostra o canvas
+      animate(); // Inicia a animação
     });
-  }
-
-  function adicionarRota() {
-    const quadrado = document.getElementById("quadrado").value.trim();
-    const pacotes = document.getElementById("pacotes").value.trim();
-
-    if (!quadrado || !pacotes) {
-      alert("Preencha todos os campos!");
-      return;
-    }
-
-    // Validações: formato correto e dentro do grid
-    if (!/^[A-J]\d+$/.test(quadrado)) {
-      alert("Posição inválida! Use o formato A1, B2, ... até J10.");
-      return;
-    }
-
-    const col = quadrado.charCodeAt(0) - 65; // Ex.: 'A' -> 0
-    const row = parseInt(quadrado.slice(1)) - 1;
-
-    if (col < 0 || col >= colunas || row < 0 || row >= linhas) {
-      alert("Posição fora do grid! Use posições entre A1 e J10.");
-      return;
-    }
-
-    const pacotesArray = pacotes.split(",").map(p => p.trim());
-
-    // Verifica se o quadrado já existe
-    const rotaExistente = rotas.find(r => r.quadrado === quadrado);
-    if (rotaExistente) {
-      // Adiciona pacotes à posição existente
-      rotaExistente.pacotes.push(...pacotesArray);
-    } else {
-      // Adiciona uma nova posição
-      rotas.push({ quadrado, pacotes: pacotesArray });
-    }
-
-    // Limpa os campos
-    document.getElementById("quadrado").value = "";
-    document.getElementById("pacotes").value = "";
-
-    rotaBuscada = ""; // Limpa a rota buscada após adicionar
-    desenharGrid();
-  }
-
-  function buscarRota() {
-    const busca = document.getElementById("busca").value.trim();
-    if (!busca) {
-      alert("Digite uma rota para buscar!");
-      return;
-    }
-
-    rotaBuscada = busca; // Define a rota buscada
-    desenharGrid(); // Atualiza o canvas para destacar os quadrantes
-  }
-
-  // Inicializa o grid vazio
-  desenharGrid();
-</script>
-
+  </script>
 </body>
 </html>
