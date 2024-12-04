@@ -20,8 +20,8 @@
       background-color: #fff;
     }
     button {
-      padding: 10px 20px;
-      font-size: 18px;
+      padding: 15px 30px;
+      font-size: 20px;
       background-color: red;
       color: white;
       border: none;
@@ -35,7 +35,7 @@
 </head>
 <body>
   <button id="startButton">Iniciar Animação</button>
-  <canvas id="heartCanvas" width="400" height="400"></canvas>
+  <canvas id="heartCanvas" width="800" height="800"></canvas>
 
   <script>
     const canvas = document.getElementById("heartCanvas");
@@ -46,8 +46,8 @@
     const centerY = canvas.height / 2;
 
     let size = 0; // Tamanho do coração (para animação)
-    const maxSize = 100; // Tamanho máximo do coração
-    const speed = 2; // Velocidade de crescimento
+    const maxSize = 300; // Tamanho máximo do coração (ajustado para maior)
+    const speed = 3; // Velocidade de crescimento
 
     function drawHeart(x, y, size) {
       ctx.beginPath();
@@ -60,10 +60,10 @@
     }
 
     function drawText() {
-      ctx.font = "24px Arial";
+      ctx.font = "48px Arial"; // Texto maior
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
-      ctx.fillText("Olá", centerX, centerY + 10);
+      ctx.fillText("Olá", centerX, centerY + 20);
     }
 
     function animate() {
