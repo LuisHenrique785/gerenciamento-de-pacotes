@@ -64,7 +64,9 @@
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle"; // Centraliza verticalmente
-      ctx.fillText("          Olá testw           ", centerX, centerY); // Texto no centro exato
+      // Ajusta a posição vertical para alinhar o texto ao meio do coração
+      const textOffsetY = 50; // Ajuste manual para centralização vertical
+      ctx.fillText("Olá", centerX, centerY + textOffsetY); 
     }
 
     function animate() {
