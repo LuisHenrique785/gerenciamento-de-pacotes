@@ -46,7 +46,7 @@
     const centerY = canvas.height / 2;
 
     let size = 0; // Tamanho do coração (para animação)
-    const maxSize = 300; // Tamanho máximo do coração (ajustado para maior)
+    const maxSize = 300; // Tamanho máximo do coração
     const speed = 3; // Velocidade de crescimento
 
     function drawHeart(x, y, size) {
@@ -60,10 +60,11 @@
     }
 
     function drawText() {
-      ctx.font = "48px Arial"; // Texto maior
+      ctx.font = "bold 48px Arial"; // Texto maior
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
-      ctx.fillText("Olá", centerX, centerY + 20);
+      ctx.textBaseline = "middle"; // Centraliza verticalmente
+      ctx.fillText("Olá", centerX, centerY); // Texto no centro exato
     }
 
     function animate() {
