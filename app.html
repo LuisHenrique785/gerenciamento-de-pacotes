@@ -3,185 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Explorador de Curiosidades Espaciais</title>
+  <title>Cosmos Dinâmico - NASA Daily</title>
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: #050510;
-      color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    :root {
+      --cosmic-blue: #4a90e2;
     }
 
-    /* Fundo de Estrelas */
-    #stars-container {
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #050510;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Imagem da NASA como Fundo */
+    #bg-image {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      object-fit: cover;
       z-index: -1;
+      filter: brightness(0.4) blur(2px);
+      transition: opacity 1s ease-in-out;
     }
 
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.5;
-      animation: twinkle var(--duration) infinite;
-    }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.2); }
-    }
-
-    /* Elementos de UI */
-    #main-container {
+    .container {
       text-align: center;
       z-index: 10;
-      max-width: 80%;
+      max-width: 700px;
+      padding: 20px;
     }
 
-    h1 {
-      font-size: 3rem;
-      text-shadow: 0 0 20px #4a90e2;
-      margin-bottom: 10px;
-    }
-
-    .planet-btn {
-      padding: 20px 40px;
-      font-size: 1.2rem;
-      background: transparent;
-      color: #4a90e2;
-      border: 2px solid #4a90e2;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
-    }
-
-    .planet-btn:hover {
-      background: #4a90e2;
-      color: white;
-      box-shadow: 0 0 30px rgba(74, 144, 226, 0.6);
-      transform: scale(1.05);
-    }
-
-    /* Carta/Box de Curiosidade */
-    #fact-box {
-      display: none;
-      background: rgba(10, 10, 30, 0.9);
-      border: 1px solid #4a90e2;
-      padding: 30px;
-      border-radius: 20px;
-      margin-top: 30px;
+    .glass-card {
+      background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(10px);
-      max-width: 500px;
-      animation: fadeIn 0.8s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+      animation: fadeIn 1.5s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    #fact-text {
-      font-size: 1.3rem;
+    h1 { font-size: 2.5rem; margin-bottom: 5px; color: var(--cosmic-blue); }
+    #date { font-size: 0.9rem; opacity: 0.7; margin-bottom: 20px; display: block; }
+    
+    #explanation {
+      font-size: 1.1rem;
       line-height: 1.6;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      text-align: justify;
+      padding-right: 10px;
     }
 
-    #planet-canvas {
-      margin-top: 20px;
+    /* Scrollbar estilizada */
+    #explanation::-webkit-scrollbar { width: 5px; }
+    #explanation::-webkit-scrollbar-thumb { background: var(--cosmic-blue); border-radius: 10px; }
+
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--cosmic-blue);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
     }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-  <div id="stars-container"></div>
+  <img id="bg-image" src="" alt="">
 
-  <div id="main-container">
-    <h1>Cosmos Explorer</h1>
-    <p>Clique no botão para viajar pelo universo e descobrir um fato novo.</p>
+  <div class="container">
+    <div id="loading" class="loader"></div>
     
-    <button class="planet-btn" id="nextFactBtn">Explorar Curiosidade</button>
-
-    <div id="fact-box">
-      <canvas id="planet-canvas" width="200" height="200"></canvas>
-      <p id="fact-text"></p>
+    <div class="glass-card" id="card" style="display: none;">
+      <h1 id="title">Carregando Cosmos...</h1>
+      <span id="date"></span>
+      <div id="explanation"></div>
+      <p style="font-size: 0.8rem; color: var(--cosmic-blue);">Dados fornecidos pela NASA APOD API</p>
     </div>
   </div>
 
   <script>
-    // Gerador de Estrelas
-    const starsContainer = document.getElementById('stars-container');
-    for (let i = 0; i < 200; i++) {
-      const star = document.createElement('div');
-      star.className = 'star';
-      const size = Math.random() * 3 + 'px';
-      star.style.width = size;
-      star.style.height = size;
-      star.style.top = Math.random() * 100 + '%';
-      star.style.left = Math.random() * 100 + '%';
-      star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
-      starsContainer.appendChild(star);
-    }
+    // Usando uma chave de demonstração pública da NASA
+    const apiKey = 'DEMO_KEY'; 
+    const url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
 
-    const facts = [
-      "Vênus é o planeta mais quente do sistema solar, com temperaturas de até 465°C, mesmo não sendo o mais próximo do Sol.",
-      "No espaço, ninguém consegue te ouvir gritar porque não existe ar para transmitir as ondas sonoras.",
-      "Um dia em Vênus é mais longo do que um ano inteiro na Terra.",
-      "Existem mais estrelas no universo do que grãos de areia em todas as praias da Terra.",
-      "A Grande Mancha Vermelha de Júpiter é uma tempestade que dura há pelo menos 300 anos e é maior que a própria Terra.",
-      "Em Saturno e Júpiter, os cientistas acreditam que chove diamantes devido à pressão extrema.",
-      "O pôr do sol em Marte é azulado devido à poeira fina em sua atmosfera."
-    ];
+    async function fetchSpaceData() {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-    const btn = document.getElementById('nextFactBtn');
-    const box = document.getElementById('fact-box');
-    const text = document.getElementById('fact-text');
-    const canvas = document.getElementById('planet-canvas');
-    const ctx = canvas.getContext('2d');
+        // Preencher os dados
+        document.getElementById('bg-image').src = data.hdurl || data.url;
+        document.getElementById('title').innerText = data.title;
+        document.getElementById('date').innerText = new Date(data.date).toLocaleDateString('pt-BR');
+        
+        // A explicação vem em inglês da NASA, aqui exibimos o texto original
+        // Dica: Para traduzir automaticamente, seria necessário uma API de tradução paga.
+        document.getElementById('explanation').innerText = data.explanation;
 
-    function drawPlanet() {
-      const colors = ['#e74c3c', '#f1c40f', '#3498db', '#9b59b6', '#2ecc71'];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Desenha um planeta simples estilizado
-      ctx.beginPath();
-      ctx.arc(100, 100, 60, 0, Math.PI * 2);
-      const gradient = ctx.createRadialGradient(80, 80, 10, 100, 100, 60);
-      gradient.addColorStop(0, '#fff');
-      gradient.addColorStop(1, color);
-      ctx.fillStyle = gradient;
-      ctx.fill();
-      
-      // Adiciona "anéis" se for sorteado
-      if (Math.random() > 0.5) {
-        ctx.beginPath();
-        ctx.ellipse(100, 100, 90, 20, Math.PI / 4, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255,255,255,0.5)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
+        // Mostrar o card e esconder o loader
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('card').style.display = 'block';
+        
+      } catch (error) {
+        console.error("Erro ao buscar dados da NASA:", error);
+        document.getElementById('explanation').innerText = "Houve um erro ao conectar com a NASA. Verifique sua conexão.";
       }
     }
 
-    btn.addEventListener('click', () => {
-      const randomFact = facts[Math.floor(Math.random() * facts.length)];
-      text.innerText = randomFact;
-      box.style.display = 'block';
-      drawPlanet();
-      
-      // Feedback visual no botão
-      btn.innerText = "Viajar para outro lugar";
-    });
+    fetchSpaceData();
   </script>
 </body>
 </html>
