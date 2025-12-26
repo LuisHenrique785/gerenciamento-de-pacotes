@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal da Literatura Existencial</title>
+  <title>Labirinto Literário</title>
   <style>
     :root {
       --gold: #c5a059;
-      --bg: #0a0a0b;
-      --text: #d4d4d4;
+      --bg: #050505;
+      --text: #c0c0c0;
     }
 
     body {
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font-family: 'Times New Roman', Times, serif;
+      font-family: 'Garamond', 'Georgia', serif;
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -23,163 +23,169 @@
       overflow: hidden;
     }
 
-    /* Efeito de partículas (cinzas de papel queimado) */
     canvas {
       position: fixed;
       top: 0; left: 0;
       z-index: 1;
-      opacity: 0.15;
+      opacity: 0.1;
     }
 
     .container {
       position: relative;
       z-index: 10;
-      max-width: 650px;
-      width: 92%;
+      max-width: 700px;
+      width: 90%;
     }
 
-    .library-card {
-      background: #111;
-      border: 1px solid #222;
-      padding: 45px;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-      position: relative;
-      border-top: 4px solid var(--gold);
+    .card {
+      background: #0a0a0a;
+      border: 1px solid #1a1a1a;
+      padding: 50px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+      border-radius: 2px;
+      border-top: 3px solid var(--gold);
+      transition: all 0.5s ease;
     }
 
     h1 {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 6px;
+      letter-spacing: 8px;
       color: var(--gold);
-      margin-bottom: 30px;
       text-align: center;
+      margin-bottom: 40px;
+      opacity: 0.7;
     }
 
     #content {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       line-height: 1.8;
       text-align: justify;
-      min-height: 180px;
-      font-style: italic;
+      min-height: 200px;
     }
 
     strong {
       display: block;
-      margin-bottom: 12px;
-      font-size: 1.6rem;
+      margin-bottom: 15px;
+      font-size: 1.7rem;
       color: #fff;
-      font-style: normal;
+      font-weight: normal;
       font-variant: small-caps;
+      border-bottom: 1px solid #222;
+      padding-bottom: 10px;
     }
 
-    .btn-read {
-      display: block;
-      margin: 40px auto 0;
-      padding: 15px 40px;
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 40px;
+    }
+
+    .btn-discover {
+      padding: 15px 45px;
       background: transparent;
       border: 1px solid var(--gold);
       color: var(--gold);
       text-transform: uppercase;
       cursor: pointer;
       transition: all 0.4s;
-      letter-spacing: 3px;
-      font-size: 0.9rem;
+      letter-spacing: 4px;
+      font-size: 0.8rem;
     }
 
-    .btn-read:hover {
+    .btn-discover:hover {
       background: var(--gold);
       color: #000;
-      box-shadow: 0 0 20px rgba(197, 160, 89, 0.4);
+      box-shadow: 0 0 25px rgba(197, 160, 89, 0.3);
     }
 
-    .loading { color: var(--gold); opacity: 0.5; text-align: center; display: block; }
+    .loading-pulse {
+      font-style: italic;
+      color: var(--gold);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
   </style>
 </head>
 <body>
 
-<canvas id="ashes"></canvas>
+<canvas id="background-fx"></canvas>
 
 <div class="container">
-  <div class="library-card">
-    <h1>Labirintos do Pensamento</h1>
+  <div class="card">
+    <h1>Arquivo de Pensamentos</h1>
     <div id="content">
       "Não se pode escrever para todos, mas pode-se escrever para cada um." <br><br>
-      Explore as mentes que moldaram a alma humana através da literatura e filosofia.
+      Pressione o botão para invocar uma nova perspectiva.
     </div>
-    <button class="btn-read" id="btnNext">Sortear Obra</button>
+    <div class="controls">
+      <button class="btn-discover" id="btnNext">Sortear Destino</button>
+    </div>
   </div>
 </div>
 
 <script>
-  // --- EFEITO VISUAL DE CINZAS ---
-  const canvas = document.getElementById('ashes');
+  // --- EFEITO VISUAL: NÉVOA LENTA ---
+  const canvas = document.getElementById('background-fx');
   const ctx = canvas.getContext('2d');
-  let w, h, p = [];
-  function init() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-    p = [];
-    for(let i=0; i<80; i++) p.push({x: Math.random()*w, y: Math.random()*h, r: Math.random()*3, s: Math.random()*0.5});
-  }
+  let w, h;
+  function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+
   function draw() {
-    ctx.clearRect(0,0,w,h);
-    ctx.fillStyle = "#fff";
-    p.forEach(c => {
-      ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill();
-      c.y -= c.s; if(c.y < -10) c.y = h+10;
-    });
+    ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+    ctx.fillRect(0, 0, w, h);
+    for(let i=0; i<3; i++) {
+      ctx.beginPath();
+      ctx.arc(Math.random()*w, Math.random()*h, Math.random()*150, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(40, 40, 40, 0.05)';
+      ctx.fill();
+    }
     requestAnimationFrame(draw);
   }
-  init(); draw();
+  draw();
 
-  // --- BUSCA DINÂMICA (DOSTOIÉVSKI E OUTROS) ---
+  // --- O ACERVO (EXPANDIDO PARA MÁXIMA DESCOBERTA) ---
+  const biblioteca = [
+    // RUSSOS
+    "Fiódor Dostoiévski", "Crime e Castigo", "Os Irmãos Karamazov", "O Idiota", "Notas do Subterrâneo", "O Adolescente (Dostoiévski)", "Noites Brancas (Dostoiévski)", "O Jogador (Dostoiévski)", "Gente Pobre", "O Duplo", "Humilhados e Ofendidos", "Recordações da Casa dos Mortos", "Liev Tolstói", "Guerra e Paz", "Anna Karenina", "A Morte de Ivan Ilitch", "Ressurreição (romance)", "Sonata a Kreutzer", "Felicidade Conjugal", "Nikolai Gogol", "Almas Mortas", "O Capote", "O Nariz (conto)", "Taras Bulba", "Anton Tchekhov", "A Estepa", "O Jardim das Cerejeiras", "As Três Irmãs", "Ivan Turguêniev", "Pais e Filhos", "Mikhail Bulgakov", "O Mestre e Margarida", "Coração de Cão",
+    // EXISTENCIALISTAS E FILÓSOFOS
+    "Franz Kafka", "A Metamorfose", "O Processo (livro)", "O Castelo (livro)", "Um Médico Rural", "Diários (Kafka)", "Albert Camus", "O Estrangeiro", "O Mito de Sísifo", "A Peste", "A Queda (livro)", "O Homem Revoltado", "Jean-Paul Sartre", "A Náusea", "O Ser e o Nada", "Entre Quatro Paredes", "Friedrich Nietzsche", "Assim Falou Zaratustra", "Além do Bem e do Mal", "Ecce Homo", "O Anticristo (livro)", "Simone de Beauvoir", "O Segundo Sexo", "A Convidada", "Arthur Schopenhauer", "Emil Cioran", "Do Inconveniente de Ter Nascido", "Søren Kierkegaard", "Ou isso, ou aquilo", "Temor e Tremor",
+    // CLÁSSICOS MUNDIAIS
+    "Machado de Assis", "Memórias Póstumas de Brás Cubas", "Dom Casmurro", "Quincas Borba", "Esaú e Jacó", "Memorial de Aires", "O Alienista", "Fernando Pessoa", "Livro do Desassossego", "James Joyce", "Ulysses (livro)", "Dubliners", "Virginia Woolf", "Ao Farol", "Mrs Dalloway", "Orlando: Uma Biografia", "Victor Hugo", "Os Miseráveis", "Charles Baudelaire", "As Flores do Mal", "Marcel Proust", "Em Busca do Tempo Perdido", "Herman Melville", "Moby Dick", "Bartleby, o Escrivão", "Thomas Mann", "A Montanha Mágica", "Morte em Veneza", "Goethe", "Fausto (Goethe)", "Os Sofrimentos do Jovem Werther", "Oscar Wilde", "O Retrato de Dorian Gray", "Dante Alighieri", "Divina Comédia"
+  ];
+
   const contentDiv = document.getElementById('content');
   const btn = document.getElementById('btnNext');
 
-  const autoresEObras = [
-    // Dostoiévski
-    "Fiódor Dostoiévski", "Crime e Castigo", "Os Irmãos Karamazov", "O Idiota", "Notas do Subterrâneo",
-    // Tolstói
-    "Liev Tolstói", "Guerra e Paz", "Anna Karenina", "A Morte de Ivan Ilitch",
-    // Kafka
-    "Franz Kafka", "A Metamorfose", "O Processo (livro)", "O Castelo (livro)",
-    // Camus
-    "Albert Camus", "O Estrangeiro", "O Mito de Sísifo", "A Peste",
-    // Machado de Assis
-    "Machado de Assis", "Memórias Póstumas de Brás Cubas", "Dom Casmurro", "Quincas Borba",
-    // Nietzsche
-    "Friedrich Nietzsche", "Assim Falou Zaratustra", "Além do Bem e do Mal",
-    // Outros
-    "Jean-Paul Sartre", "A Náusea", "Liev Shestov", "Nikolai Gogol", "O Nariz (conto)", "Almas Mortas"
-  ];
-
-  async function buscarLiteratura() {
-    contentDiv.innerHTML = '<span class="loading">Consultando arquivos antigos...</span>';
+  async function invocarObra() {
+    contentDiv.innerHTML = '<span class="loading-pulse">Consultando os registros do tempo...</span>';
     
     try {
-      const tema = autoresEObras[Math.floor(Math.random() * autoresEObras.length)];
-      const url = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(tema)}`;
+      const escolha = biblioteca[Math.floor(Math.random() * biblioteca.length)];
+      const url = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(escolha)}`;
       
       const response = await fetch(url);
       const data = await response.json();
-      const pages = data.query.pages;
-      const pageId = Object.keys(pages)[0];
-      const extract = pages[pageId].extract;
+      const page = data.query.pages[Object.keys(data.query.pages)[0]];
+      const texto = page.extract;
 
-      if (extract) {
-        // Limpa o texto para pegar o essencial
-        const resumo = extract.split('. ').slice(0, 3).join('. ') + '.';
-        contentDiv.innerHTML = `<strong>${tema}</strong>${resumo}`;
+      if (texto) {
+        // Pega as primeiras 4 frases para dar uma boa ideia do livro/autor
+        const resumo = texto.split('. ').slice(0, 4).join('. ') + '.';
+        contentDiv.innerHTML = `<strong>${escolha}</strong>${resumo}`;
       } else {
-        buscarLiteratura();
+        invocarObra(); // Tenta outro se a Wikipedia não retornar texto
       }
     } catch (e) {
-      contentDiv.innerText = "A biblioteca está fechada no momento. Tente novamente.";
+      contentDiv.innerText = "A conexão com o passado falhou. Tente novamente.";
     }
   }
 
-  btn.addEventListener('click', buscarLiteratura);
+  btn.addEventListener('click', invocarObra);
 </script>
 
 </body>
