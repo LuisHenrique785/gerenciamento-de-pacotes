@@ -1,130 +1,230 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Animação do Coração com Carta</title>
+  <title>Cosmos curiosidades</title>
   <style>
+    :root {
+      --space-black: #020205;
+      --star-white: #ffffff;
+      --nebula-purple: rgba(75, 0, 130, 0.2);
+      --cosmic-blue: #4a90e2;
+    }
+
     body {
       margin: 0;
+      padding: 0;
+      background-color: var(--space-black);
+      color: white;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background-color: #f0f0f0;
-      flex-direction: column;
+      background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
     }
-    canvas {
-      display: none; /* O canvas começa invisível */
-      border: 1px solid #ddd;
-      background-color: #fff;
+
+    /* Fundo de Estrelas Animado */
+    #star-field {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
     }
-    button {
-      padding: 15px 30px;
-      font-size: 20px;
-      background-color: red;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 20px;
-    }
-    button:hover {
-      background-color: darkred;
-    }
-    .carta {
-      display: none; /* A carta começa invisível */
-      max-width: 600px;
-      margin: 20px auto;
+
+    /* Container Principal */
+    .content-wrapper {
+      position: relative;
+      z-index: 10;
+      text-align: center;
       padding: 20px;
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-      line-height: 1.5;
-      text-align: left;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      background: linear-gradient(to right, #fff, var(--cosmic-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      filter: drop-shadow(0 0 10px rgba(74, 144, 226, 0.5));
+    }
+
+    .subtitle {
+      color: var(--cosmic-blue);
+      font-size: 1.1rem;
+      margin-bottom: 40px;
+      opacity: 0.8;
+    }
+
+    /* Estilo do Botão */
+    #exploreButton {
+      padding: 18px 40px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      background: transparent;
+      border: 2px solid var(--cosmic-blue);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 20px rgba(74, 144, 226, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #exploreButton:hover {
+      background: var(--cosmic-blue);
+      box-shadow: 0 0 40px rgba(74, 144, 226, 0.6);
+      transform: translateY(-3px);
+    }
+
+    /* Caixa de Curiosidade (A nossa "Carta") */
+    .fact-card {
+      display: none;
+      max-width: 550px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 30px;
+      margin-top: 30px;
+      animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fact-title {
+      color: var(--cosmic-blue);
+      font-weight: bold;
+      display: block;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+
+    #fact-content {
+      font-size: 1.4rem;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    canvas {
+      border-radius: 50%;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <button id="startButton">Iniciar Animação</button>
-  <canvas id="heartCanvas" width="800" height="800"></canvas>
-  <button id="openHeartButton" style="display: none;">Aperte aqui para abrir o coração</button>
-  <div class="carta" id="carta">
-    <p>Olá, Bia,</p>
-    <p>Feliz Natal! Espero que goste dos presentes que escolhi com muito carinho. Quero que saiba que no próximo ano vou me esforçar para ser uma pessoa melhor, como prometi. Não posso garantir que será fácil, porque às vezes o coração fala mais alto.</p>
-    <p>Espero que não fique chateada comigo por tentar mudar minha forma de agir. Talvez você sinta que algo em mim está diferente, mas quero que saiba que meus sentimentos por você continuam os mesmos e sempre vão continuar. Não vou mais insistir, mas vou estar aqui, esperando, caso um dia você me veja de uma forma diferente.</p>
-    <p>Com carinho,<br>Luis</p>
+
+  <canvas id="star-field"></canvas>
+
+  <div class="content-wrapper">
+    <h1>COSMOS</h1>
+    <p class="subtitle">Explorador de Curiosidades Intergalácticas</p>
+    
+    <button id="exploreButton">INICIAR PROPULSÃO</button>
+
+    <div class="fact-card" id="factCard">
+      <canvas id="planetCanvas" width="150" height="150"></canvas>
+      <span class="fact-title">Você sabia?</span>
+      <p id="fact-content"></p>
+      <button id="nextFact" style="background:none; border:none; color: #4a90e2; cursor:pointer; margin-top: 20px;">[ Próximo Destino ]</button>
+    </div>
   </div>
 
   <script>
-    const canvas = document.getElementById("heartCanvas");
-    const ctx = canvas.getContext("2d");
-    const startButton = document.getElementById("startButton");
-    const openHeartButton = document.getElementById("openHeartButton");
-    const carta = document.getElementById("carta");
+    // Configuração das Estrelas
+    const starCanvas = document.getElementById('star-field');
+    const sCtx = starCanvas.getContext('2d');
+    let stars = [];
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    function resize() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    let size = 0; // Tamanho do coração (para animação)
-    const maxSize = 300; // Tamanho máximo do coração
-    const speed = 3; // Velocidade de crescimento
-
-    function drawHeart(x, y, size) {
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.bezierCurveTo(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
-      ctx.bezierCurveTo(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
-      ctx.closePath();
-      ctx.fillStyle = "red";
-      ctx.fill();
+    for(let i=0; i<400; i++) {
+      stars.push({
+        x: Math.random() * starCanvas.width,
+        y: Math.random() * starCanvas.height,
+        size: Math.random() * 1.5,
+        speed: Math.random() * 0.5
+      });
     }
 
-    function drawText() {
-      ctx.font = "bold 48px Arial"; // Texto maior
-      ctx.fillStyle = "white";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+    function animateStars() {
+      sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+      sCtx.fillStyle = "white";
+      stars.forEach(s => {
+        sCtx.beginPath();
+        sCtx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+        sCtx.fill();
+        s.y += s.speed;
+        if(s.y > starCanvas.height) s.y = 0;
+      });
+      requestAnimationFrame(animateStars);
+    }
+    animateStars();
+
+    // Lógica das Curiosidades
+    const facts = [
+      "O Sol representa 99,86% de toda a massa do nosso Sistema Solar.",
+      "A luz que você vê hoje do Sol levou 8 minutos e 20 segundos para chegar aqui.",
+      "Existem montanhas em Plutão feitas inteiramente de gelo de água que são tão altas quanto os Alpes.",
+      "O espaço é completamente silencioso porque não há atmosfera para propagar o som.",
+      "Se dois pedaços do mesmo tipo de metal se tocarem no espaço, eles se fundirão permanentemente (Soldagem a Frio).",
+      "A pegada dos astronautas na Lua deve durar pelo menos 100 milhões de anos.",
+      "Existe uma nuvem de álcool no espaço com um diâmetro 1000 vezes maior que o nosso sistema solar."
+    ];
+
+    const exploreBtn = document.getElementById('exploreButton');
+    const factCard = document.getElementById('factCard');
+    const factContent = document.getElementById('fact-content');
+    const nextFactBtn = document.getElementById('nextFact');
+    const pCanvas = document.getElementById('planetCanvas');
+    const pCtx = pCanvas.getContext('2d');
+
+    function showRandomFact() {
+      const fact = facts[Math.floor(Math.random() * facts.length)];
+      factContent.innerText = fact;
+      drawRandomPlanet();
+    }
+
+    function drawRandomPlanet() {
+      const colors = ['#ff4d4d', '#4d94ff', '#ffdb4d', '#b366ff', '#4dff88'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      pCtx.clearRect(0,0,150,150);
       
-      const textOffsetY = 50; // Ajuste para "Olá"
-      const secondTextOffsetY = 100; // Ajuste para "Só para testar"
-
-      // Texto "Olá"
-      ctx.fillText("Feliz", centerX, centerY + textOffsetY);
-      // Texto "Só para testar"
-      ctx.font = "bold 30px Arial"; // Tamanho menor para o segundo texto
-      ctx.fillText("Natal", centerX, centerY + secondTextOffsetY);
+      const grad = pCtx.createRadialGradient(60, 60, 10, 75, 75, 60);
+      grad.addColorStop(0, '#fff');
+      grad.addColorStop(1, color);
+      
+      pCtx.fillStyle = grad;
+      pCtx.beginPath();
+      pCtx.arc(75, 75, 50, 0, Math.PI*2);
+      pCtx.fill();
     }
 
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (size < maxSize) {
-        size += speed; // Faz o coração crescer
-      }
-
-      drawHeart(centerX, centerY, size);
-
-      if (size >= maxSize) {
-        drawText(); // Escreve o texto quando o coração termina de crescer
-        openHeartButton.style.display = "block"; // Mostra o botão para abrir a carta
-      } else {
-        requestAnimationFrame(animate);
-      }
-    }
-
-    startButton.addEventListener("click", () => {
-      startButton.style.display = "none"; // Esconde o botão
-      canvas.style.display = "block"; // Mostra o canvas
-      animate(); // Inicia a animação
+    exploreBtn.addEventListener('click', () => {
+      exploreBtn.style.display = 'none';
+      factCard.style.display = 'block';
+      showRandomFact();
     });
 
-    openHeartButton.addEventListener("click", () => {
-      openHeartButton.style.display = "none"; // Esconde o botão "Abrir Coração"
-      carta.style.display = "block"; // Mostra a carta
-    });
+    nextFactBtn.addEventListener('click', showRandomFact);
   </script>
 </body>
 </html>
