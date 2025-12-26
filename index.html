@@ -1,45 +1,183 @@
-// --- LÓGICA DE CONTEÚDO INFINITO E FOCADO NO ESPAÇO ---
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmos BR - Explorador Infinito</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    .ui-container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      max-width: 600px;
+      padding: 20px;
+      width: 90%;
+    }
+
+    .glass-card {
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(74, 144, 226, 0.5);
+      padding: 35px;
+      border-radius: 30px;
+      box-shadow: 0 0 50px rgba(74, 144, 226, 0.2);
+    }
+
+    h1 { 
+      color: #4a90e2; 
+      letter-spacing: 5px; 
+      margin-top: 0;
+      font-size: 2rem;
+    }
+    
+    #info {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      margin: 25px 0;
+      min-height: 120px;
+      text-align: left;
+    }
+
+    .btn-warp {
+      padding: 16px 40px;
+      background: transparent;
+      border: 2px solid #4a90e2;
+      color: white;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .btn-warp:hover {
+      background: #4a90e2;
+      box-shadow: 0 0 30px #4a90e2;
+      transform: translateY(-2px);
+    }
+
+    .loading-text { font-style: italic; color: #4a90e2; }
+    strong { color: #4a90e2; font-size: 1.3rem; display: block; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="ui-container">
+  <div class="glass-card">
+    <h1>COSMOS BR</h1>
+    <div id="info">Iniciando sistemas... Clique no botão para saltar pelo espaço.</div>
+    <button class="btn-warp" id="warpBtn">Viajar Agora</button>
+  </div>
+</div>
+
+<script>
+  // --- EFEITO VISUAL: ESTRELAS EM MOVIMENTO ---
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let w, h, stars = [];
+  let speed = 0.5;
+
+  function initStars() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    stars = [];
+    for(let i=0; i<400; i++) {
+      stars.push({
+        x: Math.random() * w - w/2,
+        y: Math.random() * h - h/2,
+        z: Math.random() * w
+      });
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,w,h);
+    ctx.translate(w/2, h/2);
+    stars.forEach(s => {
+      s.z -= speed;
+      if (s.z <= 0) s.z = w;
+      let x = s.x / (s.z / w);
+      let y = s.y / (s.z / w);
+      let size = (1 - s.z/w) * 3;
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI*2);
+      ctx.fill();
+    });
+    ctx.translate(-w/2, -h/2);
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', initStars);
+  initStars();
+  draw();
+
+  // --- LÓGICA DE CONTEÚDO (WIKIPEDIA FOCADA EM ESPAÇO) ---
   const infoDiv = document.getElementById('info');
   const btn = document.getElementById('warpBtn');
 
-  // Lista de sementes para garantir que o assunto seja sempre espaço
   const termosEspaciais = [
     "Buraco negro", "Galáxia", "Via Láctea", "Marte (planeta)", "Júpiter (planeta)", 
     "Estrela de nêutrons", "Nebulosa", "Supernova", "Exoplaneta", "Sistema Solar",
     "Telescópio Espacial James Webb", "Buraco de minhoca", "Big Bang", "Constelação",
-    "Andrômeda (galáxia)", "Quasar", "Pulsar", "Viagem espacial", "Lua", "Cometa"
+    "Andrômeda (galáxia)", "Quasar", "Pulsar", "Viagem espacial", "Lua", "Cometa",
+    "Saturno (planeta)", "Urano (planeta)", "Netuno (planeta)", "Plutão", "Cinturão de Asteroides",
+    "Estação Espacial Internacional", "Astronauta", "Gravidade", "Relatividade geral", "Espaço-tempo"
   ];
 
   async function buscarFatoEspacial() {
-    infoDiv.innerHTML = '<span class="loading-text">Calculando rota para nova galáxia...</span>';
-    speed = 15; 
+    infoDiv.innerHTML = '<span class="loading-text">Calculando rota de dobra...</span>';
+    speed = 20; // Acelera as estrelas
     
     try {
-      // Sorteia um termo da lista para garantir o tema
       const termoAleatorio = termosEspaciais[Math.floor(Math.random() * termosEspaciais.length)];
-      
-      // Busca o resumo desse termo na Wikipedia em português
       const url = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(termoAleatorio)}`;
       
       const response = await fetch(url);
       const data = await response.json();
-      
       const pages = data.query.pages;
       const pageId = Object.keys(pages)[0];
       const content = pages[pageId].extract;
 
       if (content) {
-        // Pega as primeiras 3 frases para não ficar um texto gigante
+        // Formata para pegar as primeiras frases
         const resumoCurto = content.split('. ').slice(0, 3).join('. ') + '.';
-        infoDiv.innerHTML = `<strong>${termoAleatorio}:</strong><br>${resumoCurto}`;
+        infoDiv.innerHTML = `<strong>${termoAleatorio}</strong>${resumoCurto}`;
       } else {
-        buscarFatoEspacial(); // Tenta outro se der erro
+        buscarFatoEspacial();
       }
     } catch (e) {
-      infoDiv.innerText = "Sinal fraco... Tente novamente a conexão intergaláctica.";
+      infoDiv.innerText = "Erro na conexão intergaláctica. Tente novamente.";
     } finally {
-      setTimeout(() => speed = 0.5, 1000);
+      setTimeout(() => speed = 0.5, 1000); // Reduz velocidade após o "salto"
     }
   }
 
   btn.addEventListener('click', buscarFatoEspacial);
+</script>
+
+</body>
+</html>
