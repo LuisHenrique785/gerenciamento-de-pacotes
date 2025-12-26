@@ -3,131 +3,181 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cosmos Dinâmico - NASA Daily</title>
+  <title>Exploração Cosmos Brasil</title>
   <style>
-    :root {
-      --cosmic-blue: #4a90e2;
-    }
-
-    body {
+    body, html {
       margin: 0;
       padding: 0;
-      background-color: #050510;
+      height: 100%;
+      background: #000;
       color: white;
-      font-family: 'Segoe UI', sans-serif;
-      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
     }
 
-    /* Imagem da NASA como Fundo */
-    #bg-image {
+    /* Fundo de Nebulosa Dinâmica */
+    #nebula {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
       z-index: -1;
-      filter: brightness(0.4) blur(2px);
-      transition: opacity 1s ease-in-out;
+      transition: background 2s ease;
+      background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%);
     }
 
     .container {
       text-align: center;
-      z-index: 10;
-      max-width: 700px;
       padding: 20px;
+      max-width: 600px;
+      z-index: 10;
     }
 
-    .glass-card {
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border-radius: 30px;
       padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.5);
-      animation: fadeIn 1.5s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.5s ease;
     }
 
-    h1 { font-size: 2.5rem; margin-bottom: 5px; color: var(--cosmic-blue); }
-    #date { font-size: 0.9rem; opacity: 0.7; margin-bottom: 20px; display: block; }
-    
-    #explanation {
-      font-size: 1.1rem;
+    .card.active {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-transform: uppercase;
+      letter-spacing: 8px;
+      margin-bottom: 30px;
+      background: linear-gradient(to right, #fff, #4a90e2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #curiosidade-texto {
+      font-size: 1.4rem;
       line-height: 1.6;
-      max-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      text-align: justify;
-      padding-right: 10px;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Scrollbar estilizada */
-    #explanation::-webkit-scrollbar { width: 5px; }
-    #explanation::-webkit-scrollbar-thumb { background: var(--cosmic-blue); border-radius: 10px; }
+    .btn-explorar {
+      margin-top: 30px;
+      padding: 15px 40px;
+      background: transparent;
+      border: 2px solid #4a90e2;
+      color: white;
+      border-radius: 50px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
 
-    .loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid var(--cosmic-blue);
+    .btn-explorar:hover {
+      background: #4a90e2;
+      box-shadow: 0 0 30px rgba(74, 144, 226, 0.8);
+    }
+
+    .camada-estrelas {
+      position: fixed;
+      width: 2px;
+      height: 2px;
+      background: white;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
+      opacity: 0.5;
     }
-
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-  <img id="bg-image" src="" alt="">
+<div id="nebula"></div>
+<div id="estrelas-container"></div>
 
-  <div class="container">
-    <div id="loading" class="loader"></div>
-    
-    <div class="glass-card" id="card" style="display: none;">
-      <h1 id="title">Carregando Cosmos...</h1>
-      <span id="date"></span>
-      <div id="explanation"></div>
-      <p style="font-size: 0.8rem; color: var(--cosmic-blue);">Dados fornecidos pela NASA APOD API</p>
+<div class="container">
+  <h1>Cosmos</h1>
+  
+  <div class="card" id="main-card">
+    <div id="curiosidade-texto">
+      Clique no botão abaixo para iniciar sua viagem pelo universo...
     </div>
+    <button class="btn-explorar" onclick="novaCuriosidade()">Explorar Próximo Destino</button>
   </div>
+</div>
 
-  <script>
-    // Usando uma chave de demonstração pública da NASA
-    const apiKey = 'DEMO_KEY'; 
-    const url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
+<script>
+  // Banco de dados de curiosidades em Português
+  const curiosidades = [
+    "Vênus é o único planeta que gira no sentido horário.",
+    "O pôr do sol em Marte é azulado por causa da poeira em sua atmosfera.",
+    "Existe um planeta feito de diamante chamado 55 Cancri e.",
+    "O silêncio no espaço é absoluto porque o som não tem meio para viajar.",
+    "Júpiter é tão grande que todos os outros planetas do sistema solar caberiam dentro dele.",
+    "Um dia em Vênus é mais longo do que um ano inteiro na Terra.",
+    "A Grande Mancha Vermelha de Júpiter é uma tempestade que dura há mais de 300 anos.",
+    "Neutrons de estrelas são tão densos que uma colher de chá pesaria bilhões de toneladas.",
+    "O Sol queima 600 milhões de toneladas de hidrogênio a cada segundo.",
+    "Saturno flutuaria na água se houvesse uma banheira grande o suficiente para ele.",
+    "Existem nuvens de álcool no espaço que são maiores que o nosso sistema solar."
+  ];
 
-    async function fetchSpaceData() {
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
+  const coresNebulosa = [
+    "radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%)",
+    "radial-gradient(circle at 20% 30%, #2d132c 0%, #000 100%)",
+    "radial-gradient(circle at 80% 70%, #0f3460 0%, #000 100%)",
+    "radial-gradient(circle at 50% 50%, #1b262c 0%, #000 100%)",
+    "radial-gradient(circle at 30% 60%, #4b0082 0%, #000 100%)"
+  ];
 
-        // Preencher os dados
-        document.getElementById('bg-image').src = data.hdurl || data.url;
-        document.getElementById('title').innerText = data.title;
-        document.getElementById('date').innerText = new Date(data.date).toLocaleDateString('pt-BR');
-        
-        // A explicação vem em inglês da NASA, aqui exibimos o texto original
-        // Dica: Para traduzir automaticamente, seria necessário uma API de tradução paga.
-        document.getElementById('explanation').innerText = data.explanation;
+  // Gerar estrelas estáticas
+  const containerEstrelas = document.getElementById('estrelas-container');
+  for (let i = 0; i < 150; i++) {
+    const estrela = document.createElement('div');
+    estrela.className = 'camada-estrelas';
+    estrela.style.top = Math.random() * 100 + 'vh';
+    estrela.style.left = Math.random() * 100 + 'vw';
+    estrela.style.opacity = Math.random();
+    containerEstrelas.appendChild(estrela);
+  }
 
-        // Mostrar o card e esconder o loader
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('card').style.display = 'block';
-        
-      } catch (error) {
-        console.error("Erro ao buscar dados da NASA:", error);
-        document.getElementById('explanation').innerText = "Houve um erro ao conectar com a NASA. Verifique sua conexão.";
-      }
-    }
+  function novaCuriosidade() {
+    const card = document.getElementById('main-card');
+    const texto = document.getElementById('curiosidade-texto');
+    const nebula = document.getElementById('nebula');
 
-    fetchSpaceData();
-  </script>
+    // Efeito de transição
+    card.classList.remove('active');
+    
+    setTimeout(() => {
+      // Sorteia nova curiosidade e cor
+      const rCuriosidade = curiosidades[Math.floor(Math.random() * curiosidades.length)];
+      const rCor = coresNebulosa[Math.floor(Math.random() * coresNebulosa.length)];
+      
+      texto.innerText = rCuriosidade;
+      nebula.style.background = rCor;
+      
+      card.classList.add('active');
+    }, 300);
+  }
+
+  // Ativa o card inicial
+  window.onload = () => {
+    document.getElementById('main-card').classList.add('active');
+  };
+</script>
+
 </body>
 </html>
