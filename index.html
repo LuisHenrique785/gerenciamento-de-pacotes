@@ -1,171 +1,45 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Explorador Espacial Infinito</title>
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
-
-    .ui-container {
-      position: relative;
-      z-index: 10;
-      text-align: center;
-      max-width: 600px;
-      padding: 20px;
-    }
-
-    .glass-card {
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(74, 144, 226, 0.4);
-      padding: 30px;
-      border-radius: 25px;
-      box-shadow: 0 0 40px rgba(74, 144, 226, 0.2);
-    }
-
-    h1 { color: #4a90e2; letter-spacing: 5px; margin-top: 0; }
-    
-    #info {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      margin: 20px 0;
-      min-height: 100px;
-    }
-
-    .btn-warp {
-      padding: 15px 35px;
-      background: transparent;
-      border: 2px solid #4a90e2;
-      color: white;
-      border-radius: 50px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
-      text-transform: uppercase;
-    }
-
-    .btn-warp:hover {
-      background: #4a90e2;
-      box-shadow: 0 0 20px #4a90e2;
-    }
-
-    .loading-text { font-style: italic; opacity: 0.7; }
-  </style>
-</head>
-<body>
-
-<canvas id="stars"></canvas>
-
-<div class="ui-container">
-  <div class="glass-card">
-    <h1>COSMOS BR</h1>
-    <div id="info">Clique para iniciar a viagem e descobrir algo novo sobre o universo.</div>
-    <button class="btn-warp" id="warpBtn">Viajar agora</button>
-  </div>
-</div>
-
-<script>
-  // --- MOTOR DE ESTRELAS (Background Animado) ---
-  const canvas = document.getElementById('stars');
-  const ctx = canvas.getContext('2d');
-  let w, h, stars = [];
-  let speed = 0.5;
-
-  function initStars() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-    stars = [];
-    for(let i=0; i<400; i++) {
-      stars.push({
-        x: Math.random() * w - w/2,
-        y: Math.random() * h - h/2,
-        z: Math.random() * w
-      });
-    }
-  }
-
-  function draw() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0,0,w,h);
-    ctx.translate(w/2, h/2);
-    
-    stars.forEach(s => {
-      s.z -= speed;
-      if (s.z <= 0) s.z = w;
-      let x = s.x / (s.z / w);
-      let y = s.y / (s.z / w);
-      let size = (1 - s.z/w) * 3;
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI*2);
-      ctx.fill();
-    });
-    
-    ctx.translate(-w/2, -h/2);
-    requestAnimationFrame(draw);
-  }
-
-  window.addEventListener('resize', initStars);
-  initStars();
-  draw();
-
-  // --- LÓGICA DE CONTEÚDO INFINITO (Wikipedia API) ---
+// --- LÓGICA DE CONTEÚDO INFINITO E FOCADO NO ESPAÇO ---
   const infoDiv = document.getElementById('info');
   const btn = document.getElementById('warpBtn');
 
+  // Lista de sementes para garantir que o assunto seja sempre espaço
+  const termosEspaciais = [
+    "Buraco negro", "Galáxia", "Via Láctea", "Marte (planeta)", "Júpiter (planeta)", 
+    "Estrela de nêutrons", "Nebulosa", "Supernova", "Exoplaneta", "Sistema Solar",
+    "Telescópio Espacial James Webb", "Buraco de minhoca", "Big Bang", "Constelação",
+    "Andrômeda (galáxia)", "Quasar", "Pulsar", "Viagem espacial", "Lua", "Cometa"
+  ];
+
   async function buscarFatoEspacial() {
-    infoDiv.innerHTML = '<span class="loading-text">Calculando rota de dobra...</span>';
-    speed = 15; // Aumenta velocidade das estrelas no clique
+    infoDiv.innerHTML = '<span class="loading-text">Calculando rota para nova galáxia...</span>';
+    speed = 15; 
     
     try {
-      // 1. Pega um artigo aleatório da categoria de Astronomia
-      const randomUrl = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=random&rnnamespace=0&rnlimit=1`;
-      const resRandom = await fetch(randomUrl);
-      const dataRandom = await resRandom.json();
-      const title = dataRandom.query.random[0].title;
-
-      // 2. Pega o resumo (extract) desse artigo
-      const extractUrl = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts|pageimages&exintro&explaintext&titles=${encodeURIComponent(title)}&pithumbsize=400`;
-      const resExtract = await fetch(extractUrl);
-      const dataExtract = await resExtract.json();
+      // Sorteia um termo da lista para garantir o tema
+      const termoAleatorio = termosEspaciais[Math.floor(Math.random() * termosEspaciais.length)];
       
-      const pages = dataExtract.query.pages;
+      // Busca o resumo desse termo na Wikipedia em português
+      const url = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(termoAleatorio)}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      const pages = data.query.pages;
       const pageId = Object.keys(pages)[0];
       const content = pages[pageId].extract;
 
-      if (content && content.length > 50) {
-        infoDiv.innerHTML = `<strong>${title}:</strong><br>${content.substring(0, 300)}...`;
+      if (content) {
+        // Pega as primeiras 3 frases para não ficar um texto gigante
+        const resumoCurto = content.split('. ').slice(0, 3).join('. ') + '.';
+        infoDiv.innerHTML = `<strong>${termoAleatorio}:</strong><br>${resumoCurto}`;
       } else {
-        // Se o artigo for vazio ou muito curto, tenta outro automaticamente
-        buscarFatoEspacial();
+        buscarFatoEspacial(); // Tenta outro se der erro
       }
     } catch (e) {
-      infoDiv.innerText = "Houve uma interferência na comunicação. Tente novamente.";
+      infoDiv.innerText = "Sinal fraco... Tente novamente a conexão intergaláctica.";
     } finally {
-      setTimeout(() => speed = 0.5, 1000); // Volta a velocidade normal
+      setTimeout(() => speed = 0.5, 1000);
     }
   }
 
   btn.addEventListener('click', buscarFatoEspacial);
-</script>
-
-</body>
-</html>
