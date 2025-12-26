@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cosmos BR - Explorador Infinito</title>
+  <title>Dostoiévski Dinâmico</title>
   <style>
     body {
       margin: 0;
-      background: #000;
-      color: white;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #0a0a0a;
+      color: #d1c7ac;
+      font-family: 'Georgia', serif;
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -17,166 +17,159 @@
       overflow: hidden;
     }
 
+    /* Efeito de fundo: Partículas de "cinza" ou "poeira" */
     canvas {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       z-index: 1;
+      opacity: 0.2;
     }
 
-    .ui-container {
+    .container {
       position: relative;
       z-index: 10;
-      text-align: center;
       max-width: 600px;
-      padding: 20px;
       width: 90%;
+      text-align: center;
     }
 
-    .glass-card {
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(74, 144, 226, 0.5);
-      padding: 35px;
-      border-radius: 30px;
-      box-shadow: 0 0 50px rgba(74, 144, 226, 0.2);
+    .paper-card {
+      background: #121212;
+      border: 1px solid #333;
+      padding: 40px;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
     }
 
-    h1 { 
-      color: #4a90e2; 
-      letter-spacing: 5px; 
-      margin-top: 0;
-      font-size: 2rem;
-    }
-    
-    #info {
-      font-size: 1.15rem;
-      line-height: 1.6;
-      margin: 25px 0;
-      min-height: 120px;
-      text-align: left;
+    /* Detalhe visual de papel antigo */
+    .paper-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 5px;
+      background: #8b0000;
     }
 
-    .btn-warp {
-      padding: 16px 40px;
-      background: transparent;
-      border: 2px solid #4a90e2;
-      color: white;
-      border-radius: 50px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s ease;
+    h1 {
+      font-size: 1rem;
       text-transform: uppercase;
+      letter-spacing: 5px;
+      margin-bottom: 30px;
+      color: #8b0000;
+    }
+
+    #content {
+      font-size: 1.2rem;
+      line-height: 1.7;
+      text-align: justify;
+      min-height: 150px;
+    }
+
+    strong {
+      display: block;
+      margin-bottom: 15px;
+      font-size: 1.4rem;
+      color: #eee;
+    }
+
+    .btn-search {
+      margin-top: 30px;
+      padding: 15px 35px;
+      background: transparent;
+      border: 1px solid #d1c7ac;
+      color: #d1c7ac;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: 0.4s;
       letter-spacing: 2px;
     }
 
-    .btn-warp:hover {
-      background: #4a90e2;
-      box-shadow: 0 0 30px #4a90e2;
-      transform: translateY(-2px);
+    .btn-search:hover {
+      background: #d1c7ac;
+      color: #000;
     }
 
-    .loading-text { font-style: italic; color: #4a90e2; }
-    strong { color: #4a90e2; font-size: 1.3rem; display: block; margin-bottom: 10px; }
+    .loading { font-style: italic; opacity: 0.6; }
   </style>
 </head>
 <body>
 
-<canvas id="stars"></canvas>
+<canvas id="dust"></canvas>
 
-<div class="ui-container">
-  <div class="glass-card">
-    <h1>COSMOS BR</h1>
-    <div id="info">Iniciando sistemas... Clique no botão para saltar pelo espaço.</div>
-    <button class="btn-warp" id="warpBtn">Viajar Agora</button>
+<div class="container">
+  <div class="paper-card">
+    <h1>Diário de um Escritor</h1>
+    <div id="content">
+      "A beleza salvará o mundo." <br><br> Clique abaixo para explorar as profundezas da obra dostoievskiana.
+    </div>
+    <button class="btn-search" id="btnNext">Folhear Obra</button>
   </div>
 </div>
 
 <script>
-  // --- EFEITO VISUAL: ESTRELAS EM MOVIMENTO ---
-  const canvas = document.getElementById('stars');
+  // --- EFEITO VISUAL DE POEIRA ---
+  const canvas = document.getElementById('dust');
   const ctx = canvas.getContext('2d');
-  let w, h, stars = [];
-  let speed = 0.5;
+  let w, h, particles = [];
 
-  function initStars() {
+  function init() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
-    stars = [];
-    for(let i=0; i<400; i++) {
-      stars.push({
-        x: Math.random() * w - w/2,
-        y: Math.random() * h - h/2,
-        z: Math.random() * w
-      });
-    }
+    particles = [];
+    for(let i=0; i<100; i++) particles.push({x: Math.random()*w, y: Math.random()*h, r: Math.random()*2, d: Math.random()*1});
   }
 
   function draw() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0,0,w,h);
-    ctx.translate(w/2, h/2);
-    stars.forEach(s => {
-      s.z -= speed;
-      if (s.z <= 0) s.z = w;
-      let x = s.x / (s.z / w);
-      let y = s.y / (s.z / w);
-      let size = (1 - s.z/w) * 3;
-      ctx.fillStyle = "white";
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = "#d1c7ac";
+    particles.forEach(p => {
       ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI*2);
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
       ctx.fill();
+      p.y += p.d;
+      if(p.y > h) p.y = -10;
     });
-    ctx.translate(-w/2, -h/2);
     requestAnimationFrame(draw);
   }
+  init(); draw();
 
-  window.addEventListener('resize', initStars);
-  initStars();
-  draw();
+  // --- BUSCA DINÂMICA NA WIKIPEDIA ---
+  const contentDiv = document.getElementById('content');
+  const btn = document.getElementById('btnNext');
 
-  // --- LÓGICA DE CONTEÚDO (WIKIPEDIA FOCADA EM ESPAÇO) ---
-  const infoDiv = document.getElementById('info');
-  const btn = document.getElementById('warpBtn');
-
-  const termosEspaciais = [
-    "Buraco negro", "Galáxia", "Via Láctea", "Marte (planeta)", "Júpiter (planeta)", 
-    "Estrela de nêutrons", "Nebulosa", "Supernova", "Exoplaneta", "Sistema Solar",
-    "Telescópio Espacial James Webb", "Buraco de minhoca", "Big Bang", "Constelação",
-    "Andrômeda (galáxia)", "Quasar", "Pulsar", "Viagem espacial", "Lua", "Cometa",
-    "Saturno (planeta)", "Urano (planeta)", "Netuno (planeta)", "Plutão", "Cinturão de Asteroides",
-    "Estação Espacial Internacional", "Astronauta", "Gravidade", "Relatividade geral", "Espaço-tempo"
+  const topicosDostoievski = [
+    "Fiódor Dostoiévski", "Crime e Castigo", "Os Irmãos Karamazov", "O Idiota",
+    "Notas do Subterrâneo", "O Adolescente (Dostoiévski)", "Noites Brancas (Dostoiévski)",
+    "O Jogador (Dostoiévski)", "Rodion Raskólnikov", "Príncipe Michkin", "Pavel Smerdiakov",
+    "Humilhados e Ofendidos", "Recordações da Casa dos Mortos", "O Duplo", "Gente Pobre"
   ];
 
-  async function buscarFatoEspacial() {
-    infoDiv.innerHTML = '<span class="loading-text">Calculando rota de dobra...</span>';
-    speed = 20; // Acelera as estrelas
+  async function buscarDostoiévski() {
+    contentDiv.innerHTML = '<span class="loading">Abrindo manuscrito...</span>';
     
     try {
-      const termoAleatorio = termosEspaciais[Math.floor(Math.random() * termosEspaciais.length)];
-      const url = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(termoAleatorio)}`;
+      const tema = topicosDostoievski[Math.floor(Math.random() * topicosDostoievski.length)];
+      const url = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(tema)}`;
       
       const response = await fetch(url);
       const data = await response.json();
       const pages = data.query.pages;
       const pageId = Object.keys(pages)[0];
-      const content = pages[pageId].extract;
+      const extract = pages[pageId].extract;
 
-      if (content) {
-        // Formata para pegar as primeiras frases
-        const resumoCurto = content.split('. ').slice(0, 3).join('. ') + '.';
-        infoDiv.innerHTML = `<strong>${termoAleatorio}</strong>${resumoCurto}`;
+      if (extract) {
+        // Pega as 3 primeiras frases para manter o impacto
+        const resumo = extract.split('. ').slice(0, 3).join('. ') + '.';
+        contentDiv.innerHTML = `<strong>${tema}</strong>${resumo}`;
       } else {
-        buscarFatoEspacial();
+        buscarDostoiévski();
       }
     } catch (e) {
-      infoDiv.innerText = "Erro na conexão intergaláctica. Tente novamente.";
-    } finally {
-      setTimeout(() => speed = 0.5, 1000); // Reduz velocidade após o "salto"
+      contentDiv.innerText = "A tinta secou... Tente carregar novamente.";
     }
   }
 
-  btn.addEventListener('click', buscarFatoEspacial);
+  btn.addEventListener('click', buscarDostoiévski);
 </script>
 
 </body>
