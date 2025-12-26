@@ -3,180 +3,168 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exploração Cosmos Brasil</title>
+  <title>Explorador Espacial Infinito</title>
   <style>
-    body, html {
+    body {
       margin: 0;
-      padding: 0;
-      height: 100%;
       background: #000;
       color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
-    /* Fundo de Nebulosa Dinâmica */
-    #nebula {
+    canvas {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      transition: background 2s ease;
-      background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%);
+      z-index: 1;
     }
 
-    .container {
-      text-align: center;
-      padding: 20px;
-      max-width: 600px;
+    .ui-container {
+      position: relative;
       z-index: 10;
+      text-align: center;
+      max-width: 600px;
+      padding: 20px;
     }
 
-    .card {
-      background: rgba(255, 255, 255, 0.05);
+    .glass-card {
+      background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(15px);
-      border-radius: 30px;
-      padding: 40px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 0 50px rgba(0,0,0,0.5);
-      transform: scale(0.9);
-      opacity: 0;
-      transition: all 0.5s ease;
+      border: 1px solid rgba(74, 144, 226, 0.4);
+      padding: 30px;
+      border-radius: 25px;
+      box-shadow: 0 0 40px rgba(74, 144, 226, 0.2);
     }
 
-    .card.active {
-      transform: scale(1);
-      opacity: 1;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      text-transform: uppercase;
-      letter-spacing: 8px;
-      margin-bottom: 30px;
-      background: linear-gradient(to right, #fff, #4a90e2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    #curiosidade-texto {
-      font-size: 1.4rem;
+    h1 { color: #4a90e2; letter-spacing: 5px; margin-top: 0; }
+    
+    #info {
+      font-size: 1.1rem;
       line-height: 1.6;
-      min-height: 150px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      margin: 20px 0;
+      min-height: 100px;
     }
 
-    .btn-explorar {
-      margin-top: 30px;
-      padding: 15px 40px;
+    .btn-warp {
+      padding: 15px 35px;
       background: transparent;
       border: 2px solid #4a90e2;
       color: white;
       border-radius: 50px;
-      font-weight: bold;
       cursor: pointer;
+      font-weight: bold;
       transition: 0.3s;
       text-transform: uppercase;
-      letter-spacing: 2px;
     }
 
-    .btn-explorar:hover {
+    .btn-warp:hover {
       background: #4a90e2;
-      box-shadow: 0 0 30px rgba(74, 144, 226, 0.8);
+      box-shadow: 0 0 20px #4a90e2;
     }
 
-    .camada-estrelas {
-      position: fixed;
-      width: 2px;
-      height: 2px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.5;
-    }
+    .loading-text { font-style: italic; opacity: 0.7; }
   </style>
 </head>
 <body>
 
-<div id="nebula"></div>
-<div id="estrelas-container"></div>
+<canvas id="stars"></canvas>
 
-<div class="container">
-  <h1>Cosmos</h1>
-  
-  <div class="card" id="main-card">
-    <div id="curiosidade-texto">
-      Clique no botão abaixo para iniciar sua viagem pelo universo...
-    </div>
-    <button class="btn-explorar" onclick="novaCuriosidade()">Explorar Próximo Destino</button>
+<div class="ui-container">
+  <div class="glass-card">
+    <h1>COSMOS BR</h1>
+    <div id="info">Clique para iniciar a viagem e descobrir algo novo sobre o universo.</div>
+    <button class="btn-warp" id="warpBtn">Viajar agora</button>
   </div>
 </div>
 
 <script>
-  // Banco de dados de curiosidades em Português
-  const curiosidades = [
-    "Vênus é o único planeta que gira no sentido horário.",
-    "O pôr do sol em Marte é azulado por causa da poeira em sua atmosfera.",
-    "Existe um planeta feito de diamante chamado 55 Cancri e.",
-    "O silêncio no espaço é absoluto porque o som não tem meio para viajar.",
-    "Júpiter é tão grande que todos os outros planetas do sistema solar caberiam dentro dele.",
-    "Um dia em Vênus é mais longo do que um ano inteiro na Terra.",
-    "A Grande Mancha Vermelha de Júpiter é uma tempestade que dura há mais de 300 anos.",
-    "Neutrons de estrelas são tão densos que uma colher de chá pesaria bilhões de toneladas.",
-    "O Sol queima 600 milhões de toneladas de hidrogênio a cada segundo.",
-    "Saturno flutuaria na água se houvesse uma banheira grande o suficiente para ele.",
-    "Existem nuvens de álcool no espaço que são maiores que o nosso sistema solar."
-  ];
+  // --- MOTOR DE ESTRELAS (Background Animado) ---
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let w, h, stars = [];
+  let speed = 0.5;
 
-  const coresNebulosa = [
-    "radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%)",
-    "radial-gradient(circle at 20% 30%, #2d132c 0%, #000 100%)",
-    "radial-gradient(circle at 80% 70%, #0f3460 0%, #000 100%)",
-    "radial-gradient(circle at 50% 50%, #1b262c 0%, #000 100%)",
-    "radial-gradient(circle at 30% 60%, #4b0082 0%, #000 100%)"
-  ];
-
-  // Gerar estrelas estáticas
-  const containerEstrelas = document.getElementById('estrelas-container');
-  for (let i = 0; i < 150; i++) {
-    const estrela = document.createElement('div');
-    estrela.className = 'camada-estrelas';
-    estrela.style.top = Math.random() * 100 + 'vh';
-    estrela.style.left = Math.random() * 100 + 'vw';
-    estrela.style.opacity = Math.random();
-    containerEstrelas.appendChild(estrela);
+  function initStars() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    stars = [];
+    for(let i=0; i<400; i++) {
+      stars.push({
+        x: Math.random() * w - w/2,
+        y: Math.random() * h - h/2,
+        z: Math.random() * w
+      });
+    }
   }
 
-  function novaCuriosidade() {
-    const card = document.getElementById('main-card');
-    const texto = document.getElementById('curiosidade-texto');
-    const nebula = document.getElementById('nebula');
-
-    // Efeito de transição
-    card.classList.remove('active');
+  function draw() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,w,h);
+    ctx.translate(w/2, h/2);
     
-    setTimeout(() => {
-      // Sorteia nova curiosidade e cor
-      const rCuriosidade = curiosidades[Math.floor(Math.random() * curiosidades.length)];
-      const rCor = coresNebulosa[Math.floor(Math.random() * coresNebulosa.length)];
-      
-      texto.innerText = rCuriosidade;
-      nebula.style.background = rCor;
-      
-      card.classList.add('active');
-    }, 300);
+    stars.forEach(s => {
+      s.z -= speed;
+      if (s.z <= 0) s.z = w;
+      let x = s.x / (s.z / w);
+      let y = s.y / (s.z / w);
+      let size = (1 - s.z/w) * 3;
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI*2);
+      ctx.fill();
+    });
+    
+    ctx.translate(-w/2, -h/2);
+    requestAnimationFrame(draw);
   }
 
-  // Ativa o card inicial
-  window.onload = () => {
-    document.getElementById('main-card').classList.add('active');
-  };
+  window.addEventListener('resize', initStars);
+  initStars();
+  draw();
+
+  // --- LÓGICA DE CONTEÚDO INFINITO (Wikipedia API) ---
+  const infoDiv = document.getElementById('info');
+  const btn = document.getElementById('warpBtn');
+
+  async function buscarFatoEspacial() {
+    infoDiv.innerHTML = '<span class="loading-text">Calculando rota de dobra...</span>';
+    speed = 15; // Aumenta velocidade das estrelas no clique
+    
+    try {
+      // 1. Pega um artigo aleatório da categoria de Astronomia
+      const randomUrl = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=random&rnnamespace=0&rnlimit=1`;
+      const resRandom = await fetch(randomUrl);
+      const dataRandom = await resRandom.json();
+      const title = dataRandom.query.random[0].title;
+
+      // 2. Pega o resumo (extract) desse artigo
+      const extractUrl = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts|pageimages&exintro&explaintext&titles=${encodeURIComponent(title)}&pithumbsize=400`;
+      const resExtract = await fetch(extractUrl);
+      const dataExtract = await resExtract.json();
+      
+      const pages = dataExtract.query.pages;
+      const pageId = Object.keys(pages)[0];
+      const content = pages[pageId].extract;
+
+      if (content && content.length > 50) {
+        infoDiv.innerHTML = `<strong>${title}:</strong><br>${content.substring(0, 300)}...`;
+      } else {
+        // Se o artigo for vazio ou muito curto, tenta outro automaticamente
+        buscarFatoEspacial();
+      }
+    } catch (e) {
+      infoDiv.innerText = "Houve uma interferência na comunicação. Tente novamente.";
+    } finally {
+      setTimeout(() => speed = 0.5, 1000); // Volta a velocidade normal
+    }
+  }
+
+  btn.addEventListener('click', buscarFatoEspacial);
 </script>
 
 </body>
