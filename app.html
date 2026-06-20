@@ -3,191 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Labirinto Literário</title>
-  <style>
-    :root {
-      --gold: #c5a059;
-      --bg: #050505;
-      --text: #c0c0c0;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Garamond', 'Georgia', serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    canvas {
-      position: fixed;
-      top: 0; left: 0;
-      z-index: 1;
-      opacity: 0.1;
-    }
-
-    .container {
-      position: relative;
-      z-index: 10;
-      max-width: 700px;
-      width: 90%;
-    }
-
-    .card {
-      background: #0a0a0a;
-      border: 1px solid #1a1a1a;
-      padding: 50px;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.9);
-      border-radius: 2px;
-      border-top: 3px solid var(--gold);
-      transition: all 0.5s ease;
-    }
-
-    h1 {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 8px;
-      color: var(--gold);
-      text-align: center;
-      margin-bottom: 40px;
-      opacity: 0.7;
-    }
-
-    #content {
-      font-size: 1.2rem;
-      line-height: 1.8;
-      text-align: justify;
-      min-height: 200px;
-    }
-
-    strong {
-      display: block;
-      margin-bottom: 15px;
-      font-size: 1.7rem;
-      color: #fff;
-      font-weight: normal;
-      font-variant: small-caps;
-      border-bottom: 1px solid #222;
-      padding-bottom: 10px;
-    }
-
-    .controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 40px;
-    }
-
-    .btn-discover {
-      padding: 15px 45px;
-      background: transparent;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.4s;
-      letter-spacing: 4px;
-      font-size: 0.8rem;
-    }
-
-    .btn-discover:hover {
-      background: var(--gold);
-      color: #000;
-      box-shadow: 0 0 25px rgba(197, 160, 89, 0.3);
-    }
-
-    .loading-pulse {
-      font-style: italic;
-      color: var(--gold);
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
-  </style>
+  <title>Sistema de Inventário</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">Controle de estoque</span>
+        <h1>Sistema de Inventário</h1>
+      </div>
 
-<canvas id="background-fx"></canvas>
+      <div class="toolbar" aria-label="Ações de dados">
+        <button class="btn btn-secondary" id="btnExport" type="button" title="Exportar dados">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          <span>Exportar</span>
+        </button>
+        <label class="btn btn-secondary import-button" title="Importar dados">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V10m0 0 4 4m-4-4-4 4M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg>
+          <span>Importar</span>
+          <input id="fileImport" type="file" accept="application/json">
+        </label>
+      </div>
+    </header>
 
-<div class="container">
-  <div class="card">
-    <h1>Arquivo de Pensamentos</h1>
-    <div id="content">
-      "Não se pode escrever para todos, mas pode-se escrever para cada um." <br><br>
-      Pressione o botão para invocar uma nova perspectiva.
-    </div>
-    <div class="controls">
-      <button class="btn-discover" id="btnNext">Sortear Destino</button>
-    </div>
+    <section class="metrics" aria-label="Resumo do inventário">
+      <article class="metric">
+        <span>SKUs</span>
+        <strong id="metricItems">0</strong>
+      </article>
+      <article class="metric">
+        <span>Unidades</span>
+        <strong id="metricUnits">0</strong>
+      </article>
+      <article class="metric metric-warning">
+        <span>Estoque baixo</span>
+        <strong id="metricLow">0</strong>
+      </article>
+      <article class="metric metric-value">
+        <span>Valor estimado</span>
+        <strong id="metricValue">R$ 0,00</strong>
+      </article>
+    </section>
+
+    <main class="inventory-layout">
+      <section class="panel form-panel" aria-labelledby="formTitle">
+        <div class="panel-heading">
+          <h2 id="formTitle">Novo item</h2>
+          <button class="icon-btn ghost" id="btnClear" type="button" title="Limpar formulário" aria-label="Limpar formulário">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2m-8 0 1 14h8l1-14"/></svg>
+          </button>
+        </div>
+
+        <form id="itemForm" autocomplete="off">
+          <input id="itemId" type="hidden">
+
+          <div class="field">
+            <label for="name">Item</label>
+            <input id="name" name="name" type="text" maxlength="80" required>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="sku">SKU</label>
+              <input id="sku" name="sku" type="text" maxlength="32" required>
+            </div>
+            <div class="field">
+              <label for="category">Categoria</label>
+              <input id="category" name="category" type="text" maxlength="40" list="categoryOptions" required>
+              <datalist id="categoryOptions"></datalist>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="quantity">Quantidade</label>
+              <input id="quantity" name="quantity" type="number" min="0" step="1" required>
+            </div>
+            <div class="field">
+              <label for="minimum">Mínimo</label>
+              <input id="minimum" name="minimum" type="number" min="0" step="1" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="cost">Custo unitário</label>
+              <input id="cost" name="cost" type="number" min="0" step="0.01" required>
+            </div>
+            <div class="field">
+              <label for="location">Local</label>
+              <input id="location" name="location" type="text" maxlength="40">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-secondary" id="btnCancelEdit" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+              <span>Cancelar</span>
+            </button>
+            <button class="btn btn-primary" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+              <span id="submitLabel">Salvar item</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel table-panel" aria-labelledby="listTitle">
+        <div class="list-heading">
+          <div>
+            <h2 id="listTitle">Itens em estoque</h2>
+            <span id="resultCount">0 itens</span>
+          </div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/></svg>
+            <input id="searchInput" type="search" placeholder="Buscar item, SKU, categoria ou local">
+          </div>
+        </div>
+
+        <div class="filters">
+          <select id="categoryFilter" aria-label="Filtrar por categoria">
+            <option value="all">Todas as categorias</option>
+          </select>
+          <select id="sortSelect" aria-label="Ordenar itens">
+            <option value="name">Nome</option>
+            <option value="quantityAsc">Menor estoque</option>
+            <option value="quantityDesc">Maior estoque</option>
+            <option value="valueDesc">Maior valor</option>
+          </select>
+          <div class="segmented" role="group" aria-label="Filtrar por status de estoque">
+            <button class="active" type="button" data-stock-filter="all">Todos</button>
+            <button type="button" data-stock-filter="low">Baixo</button>
+            <button type="button" data-stock-filter="ok">OK</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Item</th>
+                <th>Categoria</th>
+                <th>Estoque</th>
+                <th>Valor</th>
+                <th class="actions-col">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryRows"></tbody>
+          </table>
+          <div class="empty-state" id="emptyState" hidden>
+            Nenhum item encontrado.
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
-</div>
 
-<script>
-  // --- EFEITO VISUAL: NÉVOA LENTA ---
-  const canvas = document.getElementById('background-fx');
-  const ctx = canvas.getContext('2d');
-  let w, h;
-  function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize);
-  resize();
-
-  function draw() {
-    ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
-    ctx.fillRect(0, 0, w, h);
-    for(let i=0; i<3; i++) {
-      ctx.beginPath();
-      ctx.arc(Math.random()*w, Math.random()*h, Math.random()*150, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(40, 40, 40, 0.05)';
-      ctx.fill();
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-
-  // --- O ACERVO (EXPANDIDO PARA MÁXIMA DESCOBERTA) ---
-  const biblioteca = [
-    // RUSSOS
-    "Fiódor Dostoiévski", "Crime e Castigo", "Os Irmãos Karamazov", "O Idiota", "Notas do Subterrâneo", "O Adolescente (Dostoiévski)", "Noites Brancas (Dostoiévski)", "O Jogador (Dostoiévski)", "Gente Pobre", "O Duplo", "Humilhados e Ofendidos", "Recordações da Casa dos Mortos", "Liev Tolstói", "Guerra e Paz", "Anna Karenina", "A Morte de Ivan Ilitch", "Ressurreição (romance)", "Sonata a Kreutzer", "Felicidade Conjugal", "Nikolai Gogol", "Almas Mortas", "O Capote", "O Nariz (conto)", "Taras Bulba", "Anton Tchekhov", "A Estepa", "O Jardim das Cerejeiras", "As Três Irmãs", "Ivan Turguêniev", "Pais e Filhos", "Mikhail Bulgakov", "O Mestre e Margarida", "Coração de Cão",
-    // EXISTENCIALISTAS E FILÓSOFOS
-    "Franz Kafka", "A Metamorfose", "O Processo (livro)", "O Castelo (livro)", "Um Médico Rural", "Diários (Kafka)", "Albert Camus", "O Estrangeiro", "O Mito de Sísifo", "A Peste", "A Queda (livro)", "O Homem Revoltado", "Jean-Paul Sartre", "A Náusea", "O Ser e o Nada", "Entre Quatro Paredes", "Friedrich Nietzsche", "Assim Falou Zaratustra", "Além do Bem e do Mal", "Ecce Homo", "O Anticristo (livro)", "Simone de Beauvoir", "O Segundo Sexo", "A Convidada", "Arthur Schopenhauer", "Emil Cioran", "Do Inconveniente de Ter Nascido", "Søren Kierkegaard", "Ou isso, ou aquilo", "Temor e Tremor",
-    // CLÁSSICOS MUNDIAIS
-    "Machado de Assis", "Memórias Póstumas de Brás Cubas", "Dom Casmurro", "Quincas Borba", "Esaú e Jacó", "Memorial de Aires", "O Alienista", "Fernando Pessoa", "Livro do Desassossego", "James Joyce", "Ulysses (livro)", "Dubliners", "Virginia Woolf", "Ao Farol", "Mrs Dalloway", "Orlando: Uma Biografia", "Victor Hugo", "Os Miseráveis", "Charles Baudelaire", "As Flores do Mal", "Marcel Proust", "Em Busca do Tempo Perdido", "Herman Melville", "Moby Dick", "Bartleby, o Escrivão", "Thomas Mann", "A Montanha Mágica", "Morte em Veneza", "Goethe", "Fausto (Goethe)", "Os Sofrimentos do Jovem Werther", "Oscar Wilde", "O Retrato de Dorian Gray", "Dante Alighieri", "Divina Comédia"
-  ];
-
-  const contentDiv = document.getElementById('content');
-  const btn = document.getElementById('btnNext');
-
-  async function invocarObra() {
-    contentDiv.innerHTML = '<span class="loading-pulse">Consultando os registros do tempo...</span>';
-    
-    try {
-      const escolha = biblioteca[Math.floor(Math.random() * biblioteca.length)];
-      const url = `https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(escolha)}`;
-      
-      const response = await fetch(url);
-      const data = await response.json();
-      const page = data.query.pages[Object.keys(data.query.pages)[0]];
-      const texto = page.extract;
-
-      if (texto) {
-        // Pega as primeiras 4 frases para dar uma boa ideia do livro/autor
-        const resumo = texto.split('. ').slice(0, 4).join('. ') + '.';
-        contentDiv.innerHTML = `<strong>${escolha}</strong>${resumo}`;
-      } else {
-        invocarObra(); // Tenta outro se a Wikipedia não retornar texto
-      }
-    } catch (e) {
-      contentDiv.innerText = "A conexão com o passado falhou. Tente novamente.";
-    }
-  }
-
-  btn.addEventListener('click', invocarObra);
-</script>
-
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="inventory.js"></script>
 </body>
 </html>
-
